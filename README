@@ -1,0 +1,18 @@
+
+   Homework 3
+   Ryan Denzel
+ 
+   Add lighting and textures to pacman scene
+ 
+   Key bindings:
+   a          Toggle axes
+   arrows     Change view angle
+   </>        Move Light manually
+   n          Toggle light movement
+   l          Toggle Light
+   q/w  Zoom in and out
+   0          Reset view angle
+   ESC        Exit
+ 
+
+Time to Complete: 10 hours
