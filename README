@@ -1,18 +1,19 @@
 
-   Homework 3
+   Pacman
    Ryan Denzel
  
-   Add lighting and textures to pacman scene
+   Pacman Game: Collect the white balls to beat the level. You have three lives to 		complete the objective.
  
-   Key bindings:
-   a          Toggle axes
-   arrows     Change view angle
-   </>        Move Light manually
-   n          Toggle light movement
-   l          Toggle Light
-   q/w  Zoom in and out
-   0          Reset view angle
-   ESC        Exit
- 
+    Key bindings:
+    w/a/s/d    Move Pacman
+    ESC        Exit
 
-Time to Complete: 10 hours
+    For purpose of design and editing of the game
+    arrows     Change view angle
+    l          Toggle Light
+    0          Reset view angle
+
+
+Left to Complete: I still need to add the players score and lives left to a HUD. I also need to add collision with walls and the balls. A success condition when all the balls are collected and the level is complete needs to be added. If time allows, I will explore SDL to add sound effects to the game. 
+
+Time Worked: ~20 hours

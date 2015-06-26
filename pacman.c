@@ -2,15 +2,14 @@
  *  Pacman
  *  Ryan Denzel
  *
- *  Add lighting and textures to pacman scene
+ *  Pacman game
  *
  *  Key bindings:
- *  a          Toggle axes
+ *  w/a/s/d    Move Pacman
  *  arrows     Change view angle
  *  </>        Move Light manually
  *  n          Toggle light movement
  *  l          Toggle Light
- *  q/w  Zoom in and out
  *  0          Reset view angle
  *  ESC        Exit
  */
@@ -49,11 +48,25 @@ int distance  =   5;  // Light distance
 int inc       =  10;  // Ball increment
 unsigned int texture[2]; // Textures
 float pos[2];           // Store pacman's new position
-float past[2];
 int press = 0;            // store key pressed for pacman's movement
-int mouthOpen = 0;
 float wall[50][2];  // For collision detection of walls
 int p = 0;
+float posx1 = -9;   // Red Ghost initial position x
+float posz1 = -5;   // Red Ghost initial position z
+float posx2 = -5;   // BlueGhost initial position x
+float posz2 = -5;   // Blue Ghost initial positionz
+float posx3 = 9;   // Pink Ghost initial position x
+float posz3 = -5;   // Pink Ghost initial positionz
+float posx4 = 0;   // orange Ghost initial position x
+float posz4 = -3;   // orange Ghost initial positionz
+int redTrack = 0;   // Tracking red ghost's position
+int blueTrack = 0;  // Tracking blue ghost's position
+int pinkTrack = 0;  // Tracking pink ghost's position
+int orangeTrack = 0;  // Tracking orange ghost's position
+float dx = .5;      // Movement speed of ghosts
+int dead = 0;       // Check if pacman hit a ghost
+int lives = 3;      //Pacman's lives
+int done = 0;       // Game over
 
 //  Macro for sin & cos in degrees
 #define Cos(th) cos(3.1415927/180*(th))
@@ -276,6 +289,16 @@ static void cylinder(double r)
  
 }
 
+static void ball(double x, double y, double z, double r, int col){
+    glPushMatrix();
+    //  Offset and scale
+    glTranslated(x,y,z);
+    glScaled(r,r,r);
+    sphere(x,y,z,r,0,col);
+    glPopMatrix();
+
+}
+
 static void ghost(double x,double y,double z, double r, int rotate, int col)
 {
     
@@ -414,6 +437,15 @@ static void lightSource(double x,double y,double z,double r)
 }
 
 /*
+ *  GLUT calls this routine when the window is resized
+ */
+void idle()
+{
+    //  Tell GLUT it is necessary to redisplay the scene
+    glutPostRedisplay();
+}
+
+/*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 void display()
@@ -466,7 +498,6 @@ void display()
 
     
    // Draw Game grid
-   // Commented out for more convenient viewing
      for (int k = -4; k <= -1; k++){
         cube(k,0,-4, .5,.5,.5 , 0);
         cube(k,0,4, .5,.5,.5 , 0);
@@ -515,39 +546,289 @@ void display()
         cube(-2,0,l, .5,.5,.5 , 0);
         cube(2,0,l, .5,.5,.5 , 0);
     }
-  
+    for (int i = -5; i <= 5; i++){
+        for (int j = -9; j <= 9; j++){
+            ball(j,0,i, 0.1,4);
+        }
+    }
     
-   // Draw ghost
-    ghost(-3,0,-3 , 0.4, 0, 0);
-    ghost(3,0,3 , 0.4, 0, 1);
-    ghost(-3,0,3 , 0.4, 0, 2);
-    ghost(3,0,-3 , 0.4, 0, 3);
+   // Draw ghosts and animate movement
+    if (redTrack == 0){
+        posx1 += dx;
+        ghost(posx1,0,-5 , 0.4, 0, 0);
+        if (posx1 >= -7){
+            redTrack = 1;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (redTrack == 1){
+        posz1 += dx;
+        ghost(-7,0,posz1 , 0.4, 0, 0);
+        if (posz1 >= 5){
+            redTrack = 2;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (redTrack == 2){
+        posx1 -= dx;
+        ghost(posx1,0,5 , 0.4, 0, 0);
+        if (posx1 <= -9){
+            redTrack = 3;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (redTrack == 3){
+        posz1 -= dx;
+        ghost(-9,0,posz1 , 0.4, 0, 0);
+        if (posz1 <= -5){
+            redTrack = 0;
+        }
+        glutIdleFunc(idle);
+    }
+   
+    if (blueTrack == 0){
+        posx2 += dx;
+        ghost(posx2,0,-5 , 0.4, 0, 1);
+        if (posx2 >= 5){
+            blueTrack = 1;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (blueTrack == 1){
+        posz2 += dx;
+        ghost(5,0,posz2 , 0.4, 0, 1);
+        if (posz2 >= 5){
+            blueTrack = 2;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (blueTrack == 2){
+        posx2 -= dx;
+        ghost(posx2,0,5 , 0.4, 0, 1);
+        if (posx2 <= -5){
+            blueTrack = 3;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (blueTrack == 3){
+        posz2 -= dx;
+        ghost(-5,0,posz2 , 0.4, 0, 1);
+        if (posz2 <= -5){
+            blueTrack = 0;
+        }
+        glutIdleFunc(idle);
+    }
     
-   // Draw Pacman
-    pacman(pos[0],0,pos[1], .4,0,press);
+    if (pinkTrack == 0){
+        posx3 += dx;
+        ghost(posx3,0,-5 , 0.4, 0, 2);
+        if (posx3 >= 9){
+            pinkTrack = 1;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (pinkTrack == 1){
+        posz3 += dx;
+        ghost(9,0,posz3 , 0.4, 0, 2);
+        if (posz3 >= 5){
+            pinkTrack = 2;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (pinkTrack == 2){
+        posx3 -= dx;
+        ghost(posx3,0,5 , 0.4, 0, 2);
+        if (posx3 <= 7){
+            pinkTrack = 3;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (pinkTrack == 3){
+        posz3 -= dx;
+        ghost(7,0,posz3 , 0.4, 0, 2);
+        if (posz1 <= -5){
+            pinkTrack = 0;
+        }
+        glutIdleFunc(idle);
+    }
     
+    if (orangeTrack == 0){
+        posx4 += dx;
+        ghost(posx4,0,-3 , 0.4, 0, 3);
+        if (posx4 >= 3){
+            orangeTrack = 1;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 1){
+        posz4 += dx;
+        ghost(3,0,posz4 , 0.4, 0, 3);
+        if (posz4 >= 0){
+            orangeTrack = 2;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 2){
+        posx4 += dx;
+        ghost(posx4,0,0 , 0.4, 0, 3);
+        if (posx4 >= 5){
+            orangeTrack = 3;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 3){
+        posz4 -= dx;
+        ghost(5,0,posz4 , 0.4, 0, 3);
+        if (posz4 <= -4){
+            orangeTrack = 4;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 4){
+        posx4 += dx;
+        ghost(posx4,0,-4 , 0.4, 0, 3);
+        if (posx4 >= 7){
+            orangeTrack = 5;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 5){
+        posz4 += dx;
+        ghost(7,0,posz4 , 0.4, 0, 3);
+        if (posz4 >= 4){
+            orangeTrack = 6;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 6){
+        posx4 -= dx;
+        ghost(posx4,0,4 , 0.4, 0, 3);
+        if (posx4 <= 5){
+            orangeTrack = 7;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 7){
+        posz4 += dx;
+        ghost(5,0,posz4 , 0.4, 0, 3);
+        if (posz4 >= 5){
+            orangeTrack = 8;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 8){
+        posx4 -= dx;
+        ghost(posx4,0,5 , 0.4, 0, 3);
+        if (posx4 <= -5){
+            orangeTrack = 9;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 9){
+        posz4 -= dx;
+        ghost(-5,0,posz4 , 0.4, 0, 3);
+        if (posz4 <= 4){
+            orangeTrack = 10;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 10){
+        posx4 -= dx;
+        ghost(posx4,0,4 , 0.4, 0, 3);
+        if (posx4 <= -7){
+            orangeTrack = 11;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 11){
+        posz4 -= dx;
+        ghost(-7,0,posz4 , 0.4, 0, 3);
+        if (posz4 <= -4){
+            orangeTrack = 12;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 12){
+        posx4 += dx;
+        ghost(posx4,0,-4 , 0.4, 0, 3);
+        if (posx4 >= -5){
+            orangeTrack = 13;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 13){
+        posz4 += dx;
+        ghost(-5,0,posz4 , 0.4, 0, 3);
+        if (posz4 >= 0){
+            orangeTrack = 14;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 14){
+        posx4 += dx;
+        ghost(posx4,0,0 , 0.4, 0, 3);
+        if (posx4 >= -3){
+            orangeTrack = 15;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 15){
+        posz4 -= dx;
+        ghost(-3,0,posz4 , 0.4, 0, 3);
+        if (posz4 <= -3){
+            orangeTrack = 16;
+        }
+        glutIdleFunc(idle);
+    }
+    else if (orangeTrack == 16){
+        posx4 += dx;
+        ghost(posx4,0,-3 , 0.4, 0, 3);
+        if (posx4 >= 0){
+            orangeTrack = 0;
+        }
+        glutIdleFunc(idle);
+    }
+    
+   // Detect ghost collision
+    if ((pos[0] == posx1 && pos[1] == posz1) ||
+        (pos[0] == posx2 && pos[1] == posz2) ||
+        (pos[0] == posx3 && pos[1] == posz3) ||
+        (pos[0] == posx4 && pos[1] == posz4)){
+        lives--;
+        dead = 1;
+        if (lives == 0){
+            done = 1;
+        }
+    }
+    // Draw Pacman
+    if (dead == 0){
+        pacman(pos[0],0,pos[1], .4,0,press);
+    }
+    else if (done == 1){
+        glPopMatrix();
+        glDisable(GL_LIGHTING);
+        //  Display parameters
+        glColor3f(1,1,1);
+        glWindowPos2i(400,400);
+        Print("Game Over");
+    }
+    else{
+        pos[0] = 0;
+        pos[1] = 0;
+        dead = 0;
+        pacman(pos[0],0,pos[1], .4,0,press);
+        glutPostRedisplay();
+    }
 
    glPopMatrix();
    glDisable(GL_LIGHTING);
    //  Display parameters
    glColor3f(1,1,1);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Pacman=%f,%f ",th,ph,pos[0],pos[1]);
+   Print("Angle=%d,%d  Pacman=%f,%f Lives:%i",th,ph,pos[0],pos[1],lives);
    //  Render the scene and make it visible
    glFlush();
    glutSwapBuffers();
-}
-
-/*
- *  GLUT calls this routine when the window is resized
- */
-void idle()
-{
-    //  Elapsed time in seconds
-    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-    zh = fmod(90*t,360.0);
-    //  Tell GLUT it is necessary to redisplay the scene
-    glutPostRedisplay();
 }
 
 
