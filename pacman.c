@@ -6,11 +6,6 @@
  *
  *  Key bindings:
  *  w/a/s/d    Move Pacman
- *  arrows     Change view angle
- *  </>        Move Light manually
- *  n          Toggle light movement
- *  l          Toggle Light
- *  0          Reset view angle
  *  ESC        Exit
  */
 #include <stdio.h>
@@ -25,7 +20,6 @@
 #include <GL/glut.h>
 #endif
 
-//int axes=0;       //  Display axes
 int mode=0;       //  Projection mode
 int move=0;       //  Move light
 int th=0;         //  Azimuth of view angle
@@ -330,7 +324,6 @@ static void bell(double x, double y, double z, double r){
     glColor3f(.55,.47,.14);
     for (int i = 0; i < 360; ++i)
     {
-        int temp = i % 3;
         glNormal3f(cos(i),sin(i),0);
         glVertex3f(3*cos(i),3*sin(i),0);
         glVertex3f(2*cos(i),2*sin(i),2*r);
@@ -1218,11 +1211,9 @@ int main(int argc,char* argv[])
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
-   //glutSpecialFunc(special);
    glutKeyboardFunc(key);
    // Load Texture
    texture[0] = LoadTexBMP("brick.bmp");
-   //texture[1] = LoadTexBMP("pacman.bmp");
    //  Pass control to GLUT so it can interact with the user
    glutMainLoop();
    return 0;
