@@ -1,6 +1,8 @@
 
    Pacman
    Ryan Denzel
+
+   EXE: pacman
  
    Pacman Game: Collect the white balls to beat the level. You have three lives to 		complete the objective.
  
@@ -14,6 +16,12 @@
     0          Reset view angle
 
 
-Left to Complete: I still need to add the players score and lives left to a HUD. I also need to add collision with walls and the balls. A success condition when all the balls are collected and the level is complete needs to be added. If time allows, I will explore SDL to add sound effects to the game. 
+Left to Complete: I still need to add the players score and lives left to a HUD. 
+
+I also need to add collision with walls and the balls. I have a decent solution to the collision with the balls but I am not certain how to stop pacman from wandering through the walls. 
+
+A success condition when all the balls are collected and the level is complete needs to be added.
+
+If time allows, I will explore SDL to add sound effects to the game. 
 
 Time Worked: ~20 hours

@@ -25,11 +25,11 @@
 #include <GL/glut.h>
 #endif
 
-int axes=0;       //  Display axes
+//int axes=0;       //  Display axes
 int mode=0;       //  Projection mode
 int move=0;       //  Move light
 int th=0;         //  Azimuth of view angle
-int ph=45;         //  Elevation of view angle
+int ph=35;         //  Elevation of view angle
 int fov=55;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
 double dim=5.0;   //  Size of world
@@ -47,15 +47,14 @@ float ylight  =   0;  // Elevation of light
 int distance  =   5;  // Light distance
 int inc       =  10;  // Ball increment
 unsigned int texture[2]; // Textures
-float pos[2];           // Store pacman's new position
+int pos[2];           // Store pacman's new position
 int press = 0;            // store key pressed for pacman's movement
-float wall[50][2];  // For collision detection of walls
 int p = 0;
 float posx1 = -9;   // Red Ghost initial position x
 float posz1 = -5;   // Red Ghost initial position z
 float posx2 = -5;   // BlueGhost initial position x
 float posz2 = -5;   // Blue Ghost initial positionz
-float posx3 = 9;   // Pink Ghost initial position x
+float posx3 = 7;   // Pink Ghost initial position x
 float posz3 = -5;   // Pink Ghost initial positionz
 float posx4 = 0;   // orange Ghost initial position x
 float posz4 = -3;   // orange Ghost initial positionz
@@ -63,10 +62,43 @@ int redTrack = 0;   // Tracking red ghost's position
 int blueTrack = 0;  // Tracking blue ghost's position
 int pinkTrack = 0;  // Tracking pink ghost's position
 int orangeTrack = 0;  // Tracking orange ghost's position
-float dx = .5;      // Movement speed of ghosts
+float dx = .25;      // Movement speed of ghosts
 int dead = 0;       // Check if pacman hit a ghost
 int lives = 3;      //Pacman's lives
 int done = 0;       // Game over
+int score= 0;       // Score
+// For collision detection of walls
+int wall[13][21] ={
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0},
+    {0,1,0,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,0,1,0},
+    {0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0},
+    {0,1,0,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,0,1,0},
+    {0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+};
+// For tracking which balls need to be rendered
+int balls[13][21] ={
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0},
+    {0,1,0,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,0,1,0},
+    {0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,0,1,0,1,0},
+    {0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0},
+    {0,1,0,1,1,1,0,0,0,0,1,0,0,0,0,1,1,1,0,1,0},
+    {0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+};
 
 //  Macro for sin & cos in degrees
 #define Cos(th) cos(3.1415927/180*(th))
@@ -102,12 +134,8 @@ static void Project()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective transformation
-  // if (mode)
     gluPerspective(fov,asp,dim,4*dim);
-    gluLookAt(pos[0],5,15, pos[0],0,pos[1], 0,1,0);
-   //  Orthogonal projection
-   //else
-     // glOrtho(-asp*dim,+asp*dim, -dim,+dim, -dim,+dim);
+    gluLookAt(pos[0],5,15, pos[0],2,pos[1], 0,1,0);
    //  Switch to manipulating the model matrix
    glMatrixMode(GL_MODELVIEW);
    //  Undo previous transformations
@@ -128,6 +156,7 @@ int checkWallArray(){
     }
     return 0;
 }
+
 
 /*
  *  Draw a cube
@@ -289,6 +318,83 @@ static void cylinder(double r)
  
 }
 
+static void bell(double x, double y, double z, double r){
+    //  Save transformation
+    glPushMatrix();
+    //  Offset and scale
+    glTranslated(x,y,z);
+    glRotated(-90,1,0,0);
+    glScaled(r,r,r);
+
+    glBegin(GL_TRIANGLE_STRIP);
+    glColor3f(.55,.47,.14);
+    for (int i = 0; i < 360; ++i)
+    {
+        int temp = i % 3;
+        glNormal3f(cos(i),sin(i),0);
+        glVertex3f(3*cos(i),3*sin(i),0);
+        glVertex3f(2*cos(i),2*sin(i),2*r);
+        glVertex3f(1.5*cos(i),1.5*sin(i),4*r);
+        glVertex3f(2*cos(i),2*sin(i),10*r);
+        glVertex3f(cos(i),sin(i),12*r);
+        glVertex3f(0,0,12.1*r);
+        
+    }
+    
+    glEnd();
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.5, 0.35, 0.05);
+    glTranslated(x-.2,y+1,z);
+    glRotated(90,0,1,0);
+    glScaled(r/2,r/2,r);
+    
+    glBegin(GL_TRIANGLE_STRIP);
+    for (int i = 0; i < 360; ++i)
+    {
+        glNormal3f(cos(i),sin(i),0);
+        glVertex3f(cos(i),sin(i),-20*r);
+        glVertex3f(cos(i),sin(i),20*r);
+    }
+    
+    glEnd();
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslated(x-1.5,y-.1,z);
+    glRotated(90,1,0,0);
+    glScaled(r/2,r/2,r);
+    
+    glBegin(GL_TRIANGLE_STRIP);
+    for (int i = 0; i < 360; ++i)
+    {
+        glNormal3f(cos(i),sin(i),0);
+        glVertex3f(cos(i),sin(i),-20*r);
+        glVertex3f(cos(i),sin(i),20*r);
+    }
+    
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(x+1.2,y-.1,z);
+    glRotated(90,1,0,0);
+    glScaled(r/2,r/2,r);
+    
+    glBegin(GL_TRIANGLE_STRIP);
+    for (int i = 0; i < 360; ++i)
+    {
+        glNormal3f(cos(i),sin(i),0);
+        glVertex3f(cos(i),sin(i),-20*r);
+        glVertex3f(cos(i),sin(i),20*r);
+    }
+    
+    glEnd();
+    glPopMatrix();
+    
+
+}
+
 static void ball(double x, double y, double z, double r, int col){
     glPushMatrix();
     //  Offset and scale
@@ -406,6 +512,22 @@ static void pacman(double x,double y,double z, double r, int rotate, int press)
     
 }
 
+static void floorTiles(double x, double y, double z, double r, float col){
+    glColor3f(col,1,0);
+    glNormal3d(0,1,0);
+    glBegin(GL_POLYGON);
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            float angle = 2 * M_PI / 6 * (i + 0.5);
+            float tempx = x + r * cos(angle);
+            float tempz = z + r * sin(angle);
+            glVertex3f(tempx, y, tempz);
+        }
+    }
+    glEnd();
+}
+
 static void lightSource(double x,double y,double z,double r)
 {
     int th,ph;
@@ -495,7 +617,21 @@ void display()
     }
     else
         glDisable(GL_LIGHTING);
-
+    // Draw Bell towers
+    bell(8,2,-6,.25);
+    bell(-8,2,-6,.25);
+    
+    for (int i = -9; i <= 9; i+=2){
+        for (int j = -5; j <= 5; j +=4){
+            floorTiles(i,-.5,j,1.2,0);
+        }
+    }
+    for (int i = -8; i <= 8; i+=2){
+        for (int j = -3; j <= 5; j +=4){
+            floorTiles(i,-.5,j,1.2,.5);
+        }
+    }
+   
     
    // Draw Game grid
      for (int k = -4; k <= -1; k++){
@@ -546,13 +682,16 @@ void display()
         cube(-2,0,l, .5,.5,.5 , 0);
         cube(2,0,l, .5,.5,.5 , 0);
     }
-    for (int i = -5; i <= 5; i++){
-        for (int j = -9; j <= 9; j++){
-            ball(j,0,i, 0.1,4);
+    for (int i = -6; i <= 6; i++){
+        for (int j = -10; j <= 10; j++){
+            if (balls[i+6][j+10] == 1){
+                ball(j,0,i, 0.1,4);
+            }
         }
     }
     
    // Draw ghosts and animate movement
+    //Red Ghost Movement
     if (redTrack == 0){
         posx1 += dx;
         ghost(posx1,0,-5 , 0.4, 0, 0);
@@ -586,6 +725,7 @@ void display()
         glutIdleFunc(idle);
     }
    
+    //Blue Ghost Movement
     if (blueTrack == 0){
         posx2 += dx;
         ghost(posx2,0,-5 , 0.4, 0, 1);
@@ -619,6 +759,7 @@ void display()
         glutIdleFunc(idle);
     }
     
+    //Pink Ghost Movement
     if (pinkTrack == 0){
         posx3 += dx;
         ghost(posx3,0,-5 , 0.4, 0, 2);
@@ -652,6 +793,7 @@ void display()
         glutIdleFunc(idle);
     }
     
+    //Orange Ghost Movement
     if (orangeTrack == 0){
         posx4 += dx;
         ghost(posx4,0,-3 , 0.4, 0, 3);
@@ -789,8 +931,20 @@ void display()
         glutIdleFunc(idle);
     }
     
+    // Win condition
+    if (score == 132){
+        glPopMatrix();
+        glDisable(GL_LIGHTING);
+        //  Display parameters
+        glColor3f(1,1,1);
+        glWindowPos2i(400,400);
+        Print("Congratulations: You Win");
+        pos[0] = 0;
+        pos[1] = 0;
+    }
+    
    // Detect ghost collision
-    if ((pos[0] == posx1 && pos[1] == posz1) ||
+   if ((pos[0] == posx1 && pos[1] == posz1) ||
         (pos[0] == posx2 && pos[1] == posz2) ||
         (pos[0] == posx3 && pos[1] == posz3) ||
         (pos[0] == posx4 && pos[1] == posz4)){
@@ -811,6 +965,8 @@ void display()
         glColor3f(1,1,1);
         glWindowPos2i(400,400);
         Print("Game Over");
+        pos[0] = 0;
+        pos[1] = 0;
     }
     else{
         pos[0] = 0;
@@ -825,7 +981,7 @@ void display()
    //  Display parameters
    glColor3f(1,1,1);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Pacman=%f,%f Lives:%i",th,ph,pos[0],pos[1],lives);
+   Print("Lives:%i Score=%i",lives,score);
    //  Render the scene and make it visible
    glFlush();
    glutSwapBuffers();
@@ -869,50 +1025,58 @@ void key(unsigned char ch,int x,int y)
    //  Reset view angle
    else if (ch == '0')
       th = ph = 0;
-   //  Change field of view angle
-   else if (ch == '-' && ch>1)
-      fov--;
-   else if (ch == '+' && ch<179)
-      fov++;
    // Change pacman's postion
    else if (ch == 'w'){
-//       int check = checkWallArray();
-//       if (check == 1){
-           pos[1]-= .5;
+       int a = pos[0];
+       int b = pos[1];
+       if (wall[b+5][a+10] == 1){
+           pos[1]-= 1;
            press = 1;
-//       }
+           if(balls[b+6][a+10] == 1){
+               balls[b+6][a+10] = 0;
+               score++;
+
+           }
+       }
    }
    else if (ch == 's'){
-//       int check = checkWallArray();
-//       if (check == 1){
-           pos[1]+=.5;
+       int a = pos[0];
+       int b = pos[1];
+       if (wall[b+7][a+10] == 1){
+           pos[1]+=1;
            press = 2;
-//       }
+           if(balls[b+6][a+10] == 1){
+               balls[b+6][a+10] = 0;
+               score++;
+           }
+       }
+
    }
    else if (ch == 'a'){
-//       int check = checkWallArray();
-//       if (check == 1){
-           pos[0]-=.5;
+       int a = pos[0];
+       int b = pos[1];
+       if (wall[b+6][a+9] == 1){
+           pos[0]-=1;
            press = 3;
-//       }
+           if(balls[b+6][a+10] == 1){
+               balls[b+6][a+10] = 0;
+               score++;
+           }
+       }
+
    }
    else if (ch == 'd'){
-//       int check = checkWallArray();
-//       if (check == 1){
-           pos[0]+=.5;
+       int a = pos[0];
+       int b = pos[1];
+       if (wall[b+6][a+11] == 1){
+           pos[0]+=1;
            press = 4;
-//       }
+           if(balls[b+6][a+10] == 1){
+               balls[b+6][a+10] = 0;
+               score++;
+           }
+       }
    }
-
-   else if (ch == 'l' || ch == 'L')
-       light = 1-light;
-   else if (ch == 'n' || ch == 'N')
-       move = 1-move;
-    //  Move light
-   else if (ch == '<')
-       zh += 1;
-   else if (ch == '>')
-       zh -= 1;
 
    //  Reproject
    Project();
@@ -1054,7 +1218,7 @@ int main(int argc,char* argv[])
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
-   glutSpecialFunc(special);
+   //glutSpecialFunc(special);
    glutKeyboardFunc(key);
    // Load Texture
    texture[0] = LoadTexBMP("brick.bmp");
