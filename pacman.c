@@ -326,9 +326,13 @@ static void bell(double x, double y, double z, double r){
     {
         glNormal3f(cos(i),sin(i),0);
         glVertex3f(3*cos(i),3*sin(i),0);
+        glNormal3f(cos(i),sin(i),2*r);
         glVertex3f(2*cos(i),2*sin(i),2*r);
+        glNormal3f(cos(i),sin(i),4*r);
         glVertex3f(1.5*cos(i),1.5*sin(i),4*r);
+        glNormal3f(cos(i),sin(i),10*r);
         glVertex3f(2*cos(i),2*sin(i),10*r);
+        glNormal3f(cos(i),sin(i),12*r);
         glVertex3f(cos(i),sin(i),12*r);
         glVertex3f(0,0,12.1*r);
         
@@ -512,7 +516,7 @@ static void floorTiles(double x, double y, double z, double r, float col){
     {
         for (int i = 0; i < 6; i++)
         {
-            float angle = 2 * M_PI / 6 * (i + 0.5);
+            float angle = 2 * 3.1414926 / 6 * (i + 0.5);
             float tempx = x + r * cos(angle);
             float tempz = z + r * sin(angle);
             glVertex3f(tempx, y, tempz);
